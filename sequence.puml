@@ -1,0 +1,124 @@
+' @startuml
+
+' participant SmartisAPP as sa
+' participant ALLIOApp as aa
+' database MySQL as db
+
+' == Get webhook ==
+
+' aa -> sa: POST /allio_webhook (send webhook)
+' note right
+'     Response:
+'     {
+'         "uuid":"01234567-89ab-cdef-0123-456789abcdef",
+'         "command":"SPACE_CHANGED",
+'         "indexes":[111,222,333]
+'     }
+' end note
+' sa -> db: request integration settings by webhook_url
+' db --> sa: get integration settings by webhook_url
+' sa -> sa: validate uuid
+' alt there is current integration_uuid
+'     sa -> db: save webhook
+'     db --> sa: success
+' end
+
+
+' == Create tsks for get information about reserves ==
+' sa -> db: request new and update reserves
+' note right
+    
+' end note
+' db --> sa: get new and update reserves
+' sa -> sa: prepare data
+' sa -> db: insert tasks
+' db --> sa: success
+
+' == Reserver synchonizations ==
+' sa -> db: request tasks
+' note right
+
+' end note
+' loop all tasks
+'     sa -> aa: POST reserve/list
+'     aa --> sa: 200 OK
+'     sa -> db: insert in DB (CRM schema)
+'     db --> sa: success
+' end 
+
+
+' == Contract synchronizations ==
+' sa -> db: request active integrations
+' db --> sa: get active integrations
+' loop all integrations
+'     loop all days
+'         sa -> aa: POST bugh1c/contracts/number
+'         aa --> sa: 200 OK
+'         sa -> db: insert elements in db
+'         db --> sa: success
+'     end
+' end
+
+' @enduml
+
+
+
+@startuml
+
+participant SmartisAPP as sa
+participant ALLIOApp as aa
+database MySQL as db
+
+== Get webhook ==
+
+aa -> sa: POST /allio_webhook (send webhook)
+note right
+    Response:
+    {
+        "uuid":"01234567-89ab-cdef-0123-456789abcdef",
+        "command":"SPACE_CHANGED",
+        "indexes":[111,222,333]
+    }
+end note
+sa -> db: request integration settings by webhook_url
+db --> sa: get integration settings by webhook_url
+sa -> sa: validate uuid
+alt there is current integration_uuid
+    sa -> db: save webhook
+    db --> sa: success
+end
+
+== Create tasks for deals and reserves ==
+sa -> db: request new and update reserves and deals
+db --> sa: get new/updated reserves and deals
+sa -> sa: prepare data
+sa -> db: insert tasks (separately for reserves and deals)
+db --> sa: success
+
+== Reserve synchronizations ==
+sa -> db: request reserve tasks
+db --> sa: get reserve tasks
+loop all reserve tasks
+    sa -> aa: POST reserve/list
+    aa --> sa: 200 OK
+    sa -> db: insert to DB (CRM schema)
+    db --> sa: success
+end
+
+== Deal synchronizations ==
+sa -> db: request deal tasks
+db --> sa: get deal tasks
+loop all deal tasks
+    sa -> aa: POST dealcard/list
+    aa --> sa: 200 OK
+    sa -> db: insert to DB (CRM schema)
+    db --> sa: success
+end
+
+== Delete entities synchronizations ==
+sa -> db: request delete entities tasks
+db --> sa: get delete tasks
+sa -> db: delete all entities by external id
+db --> success
+
+@enduml

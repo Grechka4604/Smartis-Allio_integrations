@@ -1,0 +1,17 @@
+Table allio_webhook {
+    id int, 
+    integration_uuid string, // "01234567-89ab-cdef-0123-456789abcdef"
+    сommand string, // "SPACE_CHANGED"
+    external_ids_array string, // 
+    created_at timestamp // "[111,222,333]"
+}
+
+Table allio_tasks {
+    id int, 
+    external_ids string, // "[111,222,333]"
+    status int,
+    created_at timestamp,
+    entity string,
+    comand string
+}
+
